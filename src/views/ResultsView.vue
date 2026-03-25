@@ -32,8 +32,8 @@ const historyData = route.query.history ? JSON.parse(route.query.history) : [];
     <h2 class="text-xl mb-3">Historial</h2>
 
     <div v-for="(item, i) in historyData" :key="i" class="text-sm mb-1">
-      {{ item.question }} -
-      {{ item.correct ? "✔️" : "❌" }}
+      {{ item.question }} - {{ item.correct ? "✔️" : "❌" }} -
+      {{ (item.time / 1000).toFixed(2) }}s
     </div>
 
     <!-- botón volver -->

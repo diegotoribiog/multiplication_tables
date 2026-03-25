@@ -18,6 +18,9 @@ const correctAnswer = ref(null);
 const timeLeft = ref(60);
 let timer = null;
 
+// momento en el que aparece cada pregunta
+let questionStartTime = 0;
+
 // estadísticas
 const attempts = ref(0);
 const correct = ref(0);
@@ -70,6 +73,9 @@ function generateQuestion() {
 
   question.value = `${table} x ${multiplier}`;
   correctAnswer.value = table * multiplier;
+
+  // guardamos el tiempo de inicio de la pregunta
+  questionStartTime = performance.now();
 }
 
 // inicia el contador
@@ -100,6 +106,9 @@ const userAnswer = ref("");
 
 // cuando el usuario responde
 function submitAnswer() {
+  // calculamos cuánto tardó
+  const timeSpent = performance.now() - questionStartTime;
+
   const isCorrect = Number(userAnswer.value) === correctAnswer.value;
 
   attempts.value++;
@@ -111,6 +120,7 @@ function submitAnswer() {
   history.value.push({
     question: question.value,
     correct: isCorrect,
+    time: timeSpent,
   });
 
   // limpiamos y generamos nueva
