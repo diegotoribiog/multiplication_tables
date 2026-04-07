@@ -1,34 +1,34 @@
 <script setup>
 import { useRoute, useRouter } from "vue-router";
 
-// router para volver al inicio
+// router to return to the start
 const router = useRouter();
 
-// usamos route para leer los datos que vienen del juego
+// we use route to read the data coming from the game
 const route = useRoute();
 
-// stats principales
+// main stats
 const attempts = route.query.attempts;
 const correct = route.query.correct;
 const incorrect = route.query.incorrect;
 
-// historial de preguntas (viene como string desde la URL, lo parseamos)
+// question history (comes as a string from the URL, we parse it)
 const historyData = route.query.history ? JSON.parse(route.query.history) : [];
 </script>
 
 <template>
   <div class="p-6 max-w-md mx-auto text-center">
-    <!-- título -->
+    <!-- title -->
     <h1 class="text-3xl font-bold mb-6">Resultados</h1>
 
-    <!-- stats principales -->
+    <!-- main stats -->
     <div class="bg-gray-100 p-4 rounded mb-6">
       <p>Intentos: {{ attempts }}</p>
       <p class="text-green-600">Aciertos: {{ correct }}</p>
       <p class="text-red-600">Fallos: {{ incorrect }}</p>
     </div>
 
-    <!-- historial -->
+    <!-- record -->
     <h2 class="text-xl mb-3">Historial</h2>
 
     <div v-for="(item, i) in historyData" :key="i" class="text-sm mb-1">
@@ -36,12 +36,12 @@ const historyData = route.query.history ? JSON.parse(route.query.history) : [];
       {{ (item.time / 1000).toFixed(2) }}s
     </div>
 
-    <!-- botón volver -->
-    <button
-      class="mt-6 bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-      @click="router.push('/')"
+    <!-- back button -->
+    <RouterLink 
+      to="/" 
+      class="mt-6 inline-block bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
     >
       Volver
-    </button>
+    </RouterLink>
   </div>
 </template>

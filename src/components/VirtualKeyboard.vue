@@ -1,18 +1,18 @@
 <script setup>
-// emitimos eventos al padre (GameView)
+// we send events to the parent (GameView)
 const emit = defineEmits(["input", "delete", "submit"]);
 
-// cuando pulsa número
+// when you press number
 function pressNumber(num) {
   emit("input", num);
 }
 
-// borrar
+// delete
 function pressDelete() {
   emit("delete");
 }
 
-// enviar respuesta
+// send answer
 function pressSubmit() {
   emit("submit");
 }
@@ -20,7 +20,7 @@ function pressSubmit() {
 
 <template>
   <div class="grid grid-cols-3 gap-3 max-w-xs mx-auto mt-4">
-    <!-- números -->
+    <!-- numbers -->
     <button
       v-for="n in 9"
       :key="n"
@@ -30,7 +30,7 @@ function pressSubmit() {
       {{ n }}
     </button>
 
-    <!-- borrar -->
+    <!-- delete -->
     <button
       class="p-4 bg-yellow-400 rounded text-xl active:scale-95"
       @click="pressDelete"
@@ -46,7 +46,7 @@ function pressSubmit() {
       0
     </button>
 
-    <!-- enviar -->
+    <!-- send -->
     <button
       class="p-4 bg-green-500 text-white rounded text-xl active:scale-95"
       @click="pressSubmit"

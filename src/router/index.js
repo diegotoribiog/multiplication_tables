@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 
-// Vistas
+// views
 import HomeView from "../views/HomeView.vue";
 import TablesView from "../views/TablesView.vue";
 import GameView from "../views/GameView.vue";

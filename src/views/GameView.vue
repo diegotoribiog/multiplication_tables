@@ -3,33 +3,36 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import VirtualKeyboard from "../components/VirtualKeyboard.vue";
 
-// para leer el nivel y navegar
+// to read the level and navigate
 const route = useRoute();
 const router = useRouter();
 
-// cogemos el nivel desde la url
+// we get the level from the URL
 const level = Number(route.query.level);
 
-// pregunta actual y respuesta correcta
+// current question and correct answer
 const question = ref(null);
 const correctAnswer = ref(null);
 
-// tiempo del juego (60s)
+// gametime (60s)
 const timeLeft = ref(60);
 let timer = null;
 
-// momento en el que aparece cada pregunta
+// moment at which each question appears
 let questionStartTime = 0;
 
-// estadísticas
+// last question to avoid repetition
+let lastQuestion = "";
+
+// statistics
 const attempts = ref(0);
 const correct = ref(0);
 const incorrect = ref(0);
 
-// guardamos historial de preguntas
+// we keep a history of questions
 const history = ref([]);
 
-// configuración de niveles
+// level settings
 const levels = {
   1: { tables: [1, 2, 10], range: [1, 10] },
   2: { tables: [3, 4, 5], range: [1, 10] },
@@ -38,56 +41,64 @@ const levels = {
   5: { tables: [12, 13], range: [1, 10] },
 };
 
-// número aleatorio de un array
+// random number from an array
 function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// número aleatorio entre min y max
+// random number between min and max
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// genera una nueva pregunta
+// generate a new question
 function generateQuestion() {
   const lvl = levels[level];
 
   let table;
   let multiplier;
+  let newQuestion = "";
 
-  // nivel 4 (tiene lógica especial)
-  if (level === 4) {
-    const useExtra = Math.random() < 0.3;
+  do {
+    // level 4 (has special logic)
+    if (level === 4) {
+      const useExtra = Math.random() < 0.3;
 
-    if (useExtra) {
-      table = 11;
-      multiplier = randomBetween(1, 10);
+      if (useExtra) {
+        table = 11;
+        multiplier = randomBetween(1, 10);
+      } else {
+        table = random(lvl.tables);
+        multiplier = randomBetween(lvl.range[0], lvl.range[1]);
+      }
     } else {
       table = random(lvl.tables);
       multiplier = randomBetween(lvl.range[0], lvl.range[1]);
     }
-  } else {
-    table = random(lvl.tables);
-    multiplier = randomBetween(lvl.range[0], lvl.range[1]);
-  }
 
-  question.value = `${table} x ${multiplier}`;
+    newQuestion = `${table} x ${multiplier}`;
+  } while (newQuestion === lastQuestion); // avoid repeating
+
+  question.value = newQuestion;
   correctAnswer.value = table * multiplier;
 
-  // guardamos el tiempo de inicio de la pregunta
+  // save last question
+  lastQuestion = newQuestion;
+
+  // save start time
   questionStartTime = performance.now();
 }
 
-// inicia el contador
+// start the counter
 function startTimer() {
   timer = setInterval(() => {
     timeLeft.value--;
 
-    // cuando llega a 0 termina el juego
+    // the game ends when it reaches 0.
     if (timeLeft.value <= 0) {
       clearInterval(timer);
 
-      // mandamos los resultados
+      // we sent the results
       router.push({
         path: "/results",
         query: {
@@ -101,12 +112,12 @@ function startTimer() {
   }, 1000);
 }
 
-// respuesta del usuario
+// user response
 const userAnswer = ref("");
 
-// cuando el usuario responde
+// when the user responds
 function submitAnswer() {
-  // calculamos cuánto tardó
+  // we calculated how long it took
   const timeSpent = performance.now() - questionStartTime;
 
   const isCorrect = Number(userAnswer.value) === correctAnswer.value;
@@ -116,30 +127,30 @@ function submitAnswer() {
   if (isCorrect) correct.value++;
   else incorrect.value++;
 
-  // guardamos info de la pregunta
+  // we saved information about the question
   history.value.push({
     question: question.value,
     correct: isCorrect,
     time: timeSpent,
   });
 
-  // limpiamos y generamos nueva
+  // we clean and generate new
   userAnswer.value = "";
   generateQuestion();
 }
 
-// al cargar la página empieza el juego
+// the game starts when the page loads
 onMounted(() => {
   generateQuestion();
   startTimer();
 });
 
-// añadir número desde teclado virtual
+// add number from virtual keyboard
 function handleInput(num) {
   userAnswer.value += num;
 }
 
-// borrar último número
+// delete last number
 function handleDelete() {
   userAnswer.value = userAnswer.value.slice(0, -1);
 }
@@ -147,27 +158,27 @@ function handleDelete() {
 
 <template>
   <div class="p-6 max-w-md mx-auto text-center">
-    <!-- tiempo -->
+    <!-- time -->
     <h1 class="text-xl font-semibold mb-4">Tiempo: {{ timeLeft }}</h1>
 
-    <!-- pregunta -->
+    <!-- question -->
     <h2 class="text-3xl font-bold my-6">
       {{ question }}
     </h2>
 
-    <!-- respuesta del usuario -->
+    <!-- user answer -->
     <div class="text-3xl mb-6 bg-gray-100 p-4 rounded">
       {{ userAnswer || "_" }}
     </div>
 
-    <!-- teclado -->
+    <!-- keyboard -->
     <VirtualKeyboard
       @input="handleInput"
       @delete="handleDelete"
       @submit="submitAnswer"
     />
 
-    <!-- stats en tiempo real -->
+    <!-- real-time stats -->
     <div class="mt-6 bg-gray-100 p-4 rounded text-left">
       <p>Intentos: {{ attempts }}</p>
       <p class="text-green-600">Aciertos: {{ correct }}</p>

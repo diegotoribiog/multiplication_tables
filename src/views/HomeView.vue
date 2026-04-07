@@ -1,10 +1,10 @@
 <script setup>
 import { useRouter } from "vue-router";
 
-// usamos el router para movernos entre páginas
+// we use the router to move between pages
 const router = useRouter();
 
-// cuando el usuario elige nivel lo mandamos al juego
+// when the user chooses a level, we send them to the game
 function selectLevel(level) {
   router.push({ path: "/game", query: { level } });
 }
@@ -12,17 +12,17 @@ function selectLevel(level) {
 
 <template>
   <div class="p-6 max-w-md mx-auto text-center">
-    <!-- título -->
+    <!-- title -->
     <h1 class="text-3xl font-bold mb-6">Selecciona nivel</h1>
 
-    <!-- descripción del juego -->
+    <!-- game description -->
     <p class="mb-6 text-gray-700">
       Elige un nivel y practica las tablas de multiplicar. Tienes 60 segundos
       para responder tantas preguntas como puedas. ¡Intenta acertar el máximo
       posible!
     </p>
 
-    <!-- botones de niveles -->
+    <!-- level buttons -->
     <div class="flex flex-col gap-3">
       <button
         class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600"

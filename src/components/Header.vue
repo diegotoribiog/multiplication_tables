@@ -4,7 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 const router = useRouter();
 const route = useRoute();
 
-// para saber qué sección está activa
+// to find out which section is active
 function isActive(path) {
   return route.path === path;
 }
@@ -14,20 +14,9 @@ function isActive(path) {
   <header
     class="bg-blue-500 text-white p-4 flex justify-center gap-6 shadow-md"
   >
-    <button
-      class="hover:underline font-semibold"
-      :class="{ underline: isActive('/') }"
-      @click="router.push('/')"
-    >
-      Inicio
-    </button>
-
-    <button
-      class="hover:underline font-semibold"
-      :class="{ underline: isActive('/tables') }"
-      @click="router.push('/tables')"
-    >
-      Tablas
-    </button>
+  
+  <RouterLink to="/">Inicio</RouterLink>
+  <RouterLink to="/tables">Tablas</RouterLink>
+  
   </header>
 </template>
