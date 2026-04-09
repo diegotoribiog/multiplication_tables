@@ -3,36 +3,39 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import VirtualKeyboard from "../components/VirtualKeyboard.vue";
 
-// to read the level and navigate
+// read the route and navigate
 const route = useRoute();
 const router = useRouter();
 
-// we get the level from the URL
+// get the level from URL query
 const level = Number(route.query.level);
 
 // current question and correct answer
 const question = ref(null);
 const correctAnswer = ref(null);
 
-// gametime (60s)
+// game timer (seconds)
 const timeLeft = ref(60);
 let timer = null;
 
-// moment at which each question appears
+// start time of current question
 let questionStartTime = 0;
 
 // last question to avoid repetition
 let lastQuestion = "";
 
-// statistics
+// game statistics
 const attempts = ref(0);
 const correct = ref(0);
 const incorrect = ref(0);
 
-// we keep a history of questions
+// history of questions with correctness and time spent
 const history = ref([]);
 
-// level settings
+// game over state
+const gameOver = ref(false);
+
+// level configurations
 const levels = {
   1: { tables: [1, 2, 10], range: [1, 10] },
   2: { tables: [3, 4, 5], range: [1, 10] },
@@ -41,29 +44,37 @@ const levels = {
   5: { tables: [12, 13], range: [1, 10] },
 };
 
-// random number from an array
+// validate level and start game
+onMounted(() => {
+  if (!levels[level]) {
+    router.push({ name: "home" });
+    return;
+  }
+
+  generateQuestion();
+  startTimer();
+});
+
+// get a random element from an array
 function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// random number between min and max
+// get a random number between min and max inclusive
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// generate a new question
+// generate a new question (avoiding repetition)
 function generateQuestion() {
   const lvl = levels[level];
-
-  let table;
-  let multiplier;
-  let newQuestion = "";
+  let table,
+    multiplier,
+    newQuestion = "";
 
   do {
-    // level 4 (has special logic)
     if (level === 4) {
       const useExtra = Math.random() < 0.3;
-
       if (useExtra) {
         table = 11;
         multiplier = randomBetween(1, 10);
@@ -77,88 +88,78 @@ function generateQuestion() {
     }
 
     newQuestion = `${table} x ${multiplier}`;
-  } while (newQuestion === lastQuestion); // avoid repeating
+  } while (newQuestion === lastQuestion);
 
   question.value = newQuestion;
   correctAnswer.value = table * multiplier;
-
-  // save last question
   lastQuestion = newQuestion;
 
-  // save start time
+  // save start time for timing
   questionStartTime = performance.now();
 }
 
-// start the counter
+// start the countdown timer
 function startTimer() {
   timer = setInterval(() => {
     timeLeft.value--;
 
-    // the game ends when it reaches 0.
     if (timeLeft.value <= 0) {
       clearInterval(timer);
-
-      // we sent the results
-      router.push({
-        path: "/results",
-        query: {
-          attempts: attempts.value,
-          correct: correct.value,
-          incorrect: incorrect.value,
-          history: JSON.stringify(history.value),
-        },
-      });
+      gameOver.value = true;
     }
   }, 1000);
 }
 
-// user response
+// user input answer
 const userAnswer = ref("");
 
-// when the user responds
+// handle answer submission
 function submitAnswer() {
-  // we calculated how long it took
-  const timeSpent = performance.now() - questionStartTime;
+  if (gameOver.value) return; // cannot answer after game over
 
+  const timeSpent = performance.now() - questionStartTime;
   const isCorrect = Number(userAnswer.value) === correctAnswer.value;
 
   attempts.value++;
-
   if (isCorrect) correct.value++;
   else incorrect.value++;
 
-  // we saved information about the question
   history.value.push({
     question: question.value,
     correct: isCorrect,
     time: timeSpent,
   });
 
-  // we clean and generate new
   userAnswer.value = "";
   generateQuestion();
 }
 
-// the game starts when the page loads
-onMounted(() => {
-  generateQuestion();
-  startTimer();
-});
-
-// add number from virtual keyboard
+// virtual keyboard input
 function handleInput(num) {
-  userAnswer.value += num;
+  if (!gameOver.value) userAnswer.value += num;
 }
 
-// delete last number
+// delete last character
 function handleDelete() {
-  userAnswer.value = userAnswer.value.slice(0, -1);
+  if (!gameOver.value) userAnswer.value = userAnswer.value.slice(0, -1);
+}
+
+// restart current level
+function restartLevel() {
+  timeLeft.value = 60;
+  attempts.value = 0;
+  correct.value = 0;
+  incorrect.value = 0;
+  history.value = [];
+  gameOver.value = false;
+  generateQuestion();
+  startTimer();
 }
 </script>
 
 <template>
   <div class="p-6 max-w-md mx-auto text-center">
-    <!-- time -->
+    <!-- timer -->
     <h1 class="text-xl font-semibold mb-4">Tiempo: {{ timeLeft }}</h1>
 
     <!-- question -->
@@ -171,18 +172,48 @@ function handleDelete() {
       {{ userAnswer || "_" }}
     </div>
 
-    <!-- keyboard -->
+    <!-- virtual keyboard -->
     <VirtualKeyboard
       @input="handleInput"
       @delete="handleDelete"
       @submit="submitAnswer"
     />
 
-    <!-- real-time stats -->
-    <div class="mt-6 bg-gray-100 p-4 rounded text-left">
+    <!-- statistics (always visible) -->
+    <div class="mt-6 bg-gray-100 p-4 rounded text-center">
       <p>Intentos: {{ attempts }}</p>
       <p class="text-green-600">Aciertos: {{ correct }}</p>
       <p class="text-red-600">Fallos: {{ incorrect }}</p>
+    </div>
+
+    <!-- results & history (only when game is over) -->
+    <div v-if="gameOver" class="mt-6 bg-gray-100 p-4 rounded text-center">
+      <h3 class="mt-2 font-semibold mb-2">Historial de preguntas:</h3>
+      <div
+        v-for="(item, i) in history"
+        :key="i"
+        class="text-sm mb-1 flex justify-center items-center gap-2"
+      >
+        <span>{{ item.question }}</span>
+        <span>{{ item.correct ? "✔️" : "❌" }}</span>
+        <span>{{ (item.time / 1000).toFixed(2) }} s</span>
+      </div>
+    </div>
+
+    <!-- buttons -->
+    <div class="flex justify-center mt-4 gap-x-4">
+      <button
+        class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        @click="restartLevel"
+      >
+        Reiniciar nivel
+      </button>
+      <button
+        class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        @click="router.push({ name: 'home' })"
+      >
+        Volver al inicio
+      </button>
     </div>
   </div>
 </template>

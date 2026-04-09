@@ -6,7 +6,7 @@ const router = useRouter();
 
 // when the user chooses a level, we send them to the game
 function selectLevel(level) {
-  router.push({ path: "/game", query: { level } });
+  router.push({ name: 'game', query: { level } });
 }
 </script>
 

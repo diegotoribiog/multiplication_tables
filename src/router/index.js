@@ -4,13 +4,11 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import TablesView from "../views/TablesView.vue";
 import GameView from "../views/GameView.vue";
-import ResultsView from "../views/ResultsView.vue";
 
 const routes = [
-  { path: "/", component: HomeView },
-  { path: "/tables", component: TablesView },
-  { path: "/game", component: GameView },
-  { path: "/results", component: ResultsView },
+  { path: "/", name: 'home', component: HomeView },
+  { path: "/tables", name: 'tables', component: TablesView },
+  { path: "/game", name: 'game', component: GameView },
 ];
 
 const router = createRouter({
