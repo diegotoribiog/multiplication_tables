@@ -40,7 +40,15 @@ const levels = {
   1: { tables: [1, 2, 10], range: [1, 10] },
   2: { tables: [3, 4, 5], range: [1, 10] },
   3: { tables: [6, 7, 8, 9], range: [1, 10] },
-  4: { tables: [6, 7, 8], range: [6, 9], extra: [11] },
+  4: {
+    tables: [6, 7, 8, 11], // including 11 here
+    range: [6, 9], // this only afects to 6,7,8
+    special: {
+      table: 11,
+      range: [1, 10],
+      probability: 0.3
+    }
+  },
   5: { tables: [12, 13], range: [1, 10] },
 };
 
@@ -65,30 +73,29 @@ function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// generate a new question (avoiding repetition)
 function generateQuestion() {
   const lvl = levels[level];
-  let table,
-    multiplier,
-    newQuestion = "";
 
-  do {
-    if (level === 4) {
-      const useExtra = Math.random() < 0.3;
-      if (useExtra) {
-        table = 11;
-        multiplier = randomBetween(1, 10);
-      } else {
-        table = random(lvl.tables);
-        multiplier = randomBetween(lvl.range[0], lvl.range[1]);
-      }
-    } else {
-      table = random(lvl.tables);
-      multiplier = randomBetween(lvl.range[0], lvl.range[1]);
-    }
+  let table;
+  let multiplier;
 
+  // handle special case if exists
+  if (lvl.special && Math.random() < lvl.special.probability) {
+    table = lvl.special.table;
+    multiplier = randomBetween(lvl.special.range[0], lvl.special.range[1]);
+  } else {
+    table = random(lvl.tables.filter(t => t !== lvl.special?.table));
+    multiplier = randomBetween(lvl.range[0], lvl.range[1]);
+  }
+
+  let newQuestion = `${table} x ${multiplier}`;
+
+  // avoid repeating question
+  while (newQuestion === lastQuestion) {
+    table = random(lvl.tables);
+    multiplier = randomBetween(lvl.range[0], lvl.range[1]);
     newQuestion = `${table} x ${multiplier}`;
-  } while (newQuestion === lastQuestion);
+  }
 
   question.value = newQuestion;
   correctAnswer.value = table * multiplier;
