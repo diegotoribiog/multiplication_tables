@@ -215,12 +215,12 @@ function restartLevel() {
       >
         Reiniciar nivel
       </button>
-      <button
-        class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        @click="router.push({ name: 'home' })"
-      >
-        Volver al inicio
-      </button>
+      <RouterLink
+          :to="{ name: 'home' }"
+          class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        >
+          Volver al inicio
+      </RouterLink>
     </div>
   </div>
 </template>

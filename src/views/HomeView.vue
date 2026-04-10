@@ -1,13 +1,5 @@
 <script setup>
-import { useRouter } from "vue-router";
 
-// we use the router to move between pages
-const router = useRouter();
-
-// when the user chooses a level, we send them to the game
-function selectLevel(level) {
-  router.push({ name: 'game', query: { level } });
-}
 </script>
 
 <template>
@@ -22,42 +14,42 @@ function selectLevel(level) {
       posible!
     </p>
 
-    <!-- level buttons -->
+    <!-- level links -->
     <div class="flex flex-col gap-3">
-      <button
-        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-        @click="selectLevel(1)"
+      <RouterLink
+        :to="{ name: 'game', query: { level: 1 } }"
+        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 block"
       >
         Nivel 1: Tablas del 1, 2 y 10
-      </button>
+      </RouterLink>
 
-      <button
-        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-        @click="selectLevel(2)"
+      <RouterLink
+        :to="{ name: 'game', query: { level: 2 } }"
+        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 block"
       >
         Nivel 2: Tablas del 3, 4 y 5
-      </button>
+      </RouterLink>
 
-      <button
-        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-        @click="selectLevel(3)"
+      <RouterLink
+        :to="{ name: 'game', query: { level: 3 } }"
+        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 block"
       >
         Nivel 3: Tablas del 6, 7, 8 y 9
-      </button>
+      </RouterLink>
 
-      <button
-        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-        @click="selectLevel(4)"
+      <RouterLink
+        :to="{ name: 'game', query: { level: 4 } }"
+        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 block"
       >
         Nivel 4: Tablas del 6, 7, 8 (por números de 6 a 9) y 11
-      </button>
+      </RouterLink>
 
-      <button
-        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-        @click="selectLevel(5)"
+      <RouterLink
+        :to="{ name: 'game', query: { level: 5 } }"
+        class="bg-blue-500 text-white p-3 rounded hover:bg-blue-600 block"
       >
         Nivel 5: Tablas del 12 y 13
-      </button>
+      </RouterLink>
     </div>
   </div>
 </template>
