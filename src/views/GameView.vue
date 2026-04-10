@@ -1,7 +1,10 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import VirtualKeyboard from "../components/VirtualKeyboard.vue";
+
+// import simple-keyboard library
+import Keyboard from "simple-keyboard";
+import "simple-keyboard/build/css/index.css";
 
 // read the route and navigate
 const route = useRoute();
@@ -35,14 +38,20 @@ const history = ref([]);
 // game over state
 const gameOver = ref(false);
 
+// user input answer
+const userAnswer = ref("");
+
+// simple-keyboard instance
+let keyboard = null;
+
 // level configurations
 const levels = {
   1: { tables: [1, 2, 10], range: [1, 10] },
   2: { tables: [3, 4, 5], range: [1, 10] },
   3: { tables: [6, 7, 8, 9], range: [1, 10] },
   4: {
-    tables: [6, 7, 8, 11], // including 11 here
-    range: [6, 9], // this only afects to 6,7,8
+    tables: [6, 7, 8, 11],
+    range: [6, 9],
     special: {
       table: 11,
       range: [1, 10],
@@ -59,8 +68,19 @@ onMounted(() => {
     return;
   }
 
+  // generate first question
   generateQuestion();
+
+  // start game timer
   startTimer();
+
+  // initialize simple-keyboard
+  initKeyboard();
+});
+
+// destroy keyboard when leaving page
+onBeforeUnmount(() => {
+  if (keyboard) keyboard.destroy();
 });
 
 // get a random element from an array
@@ -117,9 +137,6 @@ function startTimer() {
   }, 1000);
 }
 
-// user input answer
-const userAnswer = ref("");
-
 // handle answer submission
 function submitAnswer() {
   if (gameOver.value) return; // cannot answer after game over
@@ -138,17 +155,55 @@ function submitAnswer() {
   });
 
   userAnswer.value = "";
+  updateKeyboard(""); // reset keyboard input
   generateQuestion();
 }
 
-// virtual keyboard input
+// virtual keyboard input handler (simple-keyboard)
 function handleInput(num) {
-  if (!gameOver.value) userAnswer.value += num;
+  if (!gameOver.value) {
+    userAnswer.value += num;
+    updateKeyboard(userAnswer.value);
+  }
 }
 
 // delete last character
 function handleDelete() {
-  if (!gameOver.value) userAnswer.value = userAnswer.value.slice(0, -1);
+  if (!gameOver.value) {
+    userAnswer.value = userAnswer.value.slice(0, -1);
+    updateKeyboard(userAnswer.value);
+  }
+}
+
+// update keyboard input display
+function updateKeyboard(value) {
+  if (keyboard) keyboard.setInput(value);
+}
+
+// handle key press from simple-keyboard
+function onKeyPress(button) {
+  if (button === "{bksp}") {
+    handleDelete();
+  } else if (button === "{enter}") {
+    submitAnswer();
+  } else {
+    handleInput(button);
+  }
+}
+
+// initialize simple-keyboard
+function initKeyboard() {
+  keyboard = new Keyboard.default({
+    onKeyPress: onKeyPress,
+    layout: {
+      default: ["1 2 3", "4 5 6", "7 8 9", "{bksp} 0 {enter}"],
+    },
+
+    display: {
+      "{bksp}": "⌫",
+      "{enter}": "OK",
+    },
+  });
 }
 
 // restart current level
@@ -159,6 +214,10 @@ function restartLevel() {
   incorrect.value = 0;
   history.value = [];
   gameOver.value = false;
+
+  userAnswer.value = "";
+  updateKeyboard("");
+
   generateQuestion();
   startTimer();
 }
@@ -181,12 +240,8 @@ function restartLevel() {
       {{ userAnswer || "_" }}
     </div>
 
-    <!-- virtual keyboard -->
-    <VirtualKeyboard
-      @input="handleInput"
-      @delete="handleDelete"
-      @submit="submitAnswer"
-    />
+    <!-- simple-keyboard container -->
+    <div class="simple-keyboard"></div>
 
     <!-- statistics (always visible) -->
     <div class="mt-6 bg-gray-100 p-4 rounded text-center">
@@ -217,6 +272,7 @@ function restartLevel() {
       >
         {{ $t("game.restart") }}
       </button>
+
       <RouterLink
         :to="{ name: 'home' }"
         class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
