@@ -6,9 +6,9 @@ import TablesView from "../views/TablesView.vue";
 import GameView from "../views/GameView.vue";
 
 const routes = [
-  { path: "/", name: 'home', component: HomeView },
-  { path: "/tables", name: 'tables', component: TablesView },
-  { path: "/game", name: 'game', component: GameView },
+  { path: "/", name: "home", component: HomeView },
+  { path: "/tables", name: "tables", component: TablesView },
+  { path: "/game", name: "game", component: GameView },
 ];
 
 const router = createRouter({

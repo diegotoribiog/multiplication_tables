@@ -46,8 +46,8 @@ const levels = {
     special: {
       table: 11,
       range: [1, 10],
-      probability: 0.3
-    }
+      probability: 0.3,
+    },
   },
   5: { tables: [12, 13], range: [1, 10] },
 };
@@ -84,7 +84,7 @@ function generateQuestion() {
     table = lvl.special.table;
     multiplier = randomBetween(lvl.special.range[0], lvl.special.range[1]);
   } else {
-    table = random(lvl.tables.filter(t => t !== lvl.special?.table));
+    table = random(lvl.tables.filter((t) => t !== lvl.special?.table));
     multiplier = randomBetween(lvl.range[0], lvl.range[1]);
   }
 
@@ -167,7 +167,9 @@ function restartLevel() {
 <template>
   <div class="p-6 max-w-md mx-auto text-center">
     <!-- timer -->
-    <h1 class="text-xl font-semibold mb-4">Tiempo: {{ timeLeft }}</h1>
+    <h1 class="text-xl font-semibold mb-4">
+      {{ $t("game.time") }}: {{ timeLeft }}
+    </h1>
 
     <!-- question -->
     <h2 class="text-3xl font-bold my-6">
@@ -188,14 +190,14 @@ function restartLevel() {
 
     <!-- statistics (always visible) -->
     <div class="mt-6 bg-gray-100 p-4 rounded text-center">
-      <p>Intentos: {{ attempts }}</p>
-      <p class="text-green-600">Aciertos: {{ correct }}</p>
-      <p class="text-red-600">Fallos: {{ incorrect }}</p>
+      <p>{{ $t("game.attempts") }}: {{ attempts }}</p>
+      <p class="text-green-600">{{ $t("game.correct") }}: {{ correct }}</p>
+      <p class="text-red-600">{{ $t("game.incorrect") }}: {{ incorrect }}</p>
     </div>
 
     <!-- results & history (only when game is over) -->
     <div v-if="gameOver" class="mt-6 bg-gray-100 p-4 rounded text-center">
-      <h3 class="mt-2 font-semibold mb-2">Historial de preguntas:</h3>
+      <h3 class="mt-2 font-semibold mb-2">{{ $t("game.history") }}</h3>
       <div
         v-for="(item, i) in history"
         :key="i"
@@ -213,13 +215,13 @@ function restartLevel() {
         class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
         @click="restartLevel"
       >
-        Reiniciar nivel
+        {{ $t("game.restart") }}
       </button>
       <RouterLink
-          :to="{ name: 'home' }"
-          class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        >
-          Volver al inicio
+        :to="{ name: 'home' }"
+        class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+      >
+        {{ $t("game.home") }}
       </RouterLink>
     </div>
   </div>
